@@ -12,14 +12,13 @@ __version__ = '1.0.0'
 
 
 class Parser(object):
-    parser = None
+    @staticmethod
+    def map(x, **kwargs):
+        parser = kwargs.get('parser')
+        return [Event(parser.parse(i).result()) for i in x]
 
-    @classmethod
-    def map(cls, x):
-        return [Event(cls.parser.parse(i).result()) for i in x]
-
-    @classmethod
-    def reduce(cls, x):
+    @staticmethod
+    def reduce(x):
         return sum(x, [])
 
 
@@ -40,7 +39,7 @@ class Sender(sender.BatchSender):
         args = agent.client.args
         kwargs = agent.client.kwargs
         self.client = Client(*args, **kwargs)
-        self.parser = agent.real_parser
+        Parser.parser = agent.real_parser
 
     def push(self):
         ret = False
@@ -55,7 +54,8 @@ class Sender(sender.BatchSender):
                     break
 
         if self._buffers:
-            buffers = self.client.map(Parser.map, self._buffers)
+            pmap = partial(Parser.map, parser=self.parser)
+            buffers = self.client.map(pmap, self._buffers)
             buffers = self.client.submit(Parser.reduce, buffers).result()
             if hasattr(self._output, 'sendmany'):
                 self._output.sendmany(buffers)
