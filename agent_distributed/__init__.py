@@ -39,7 +39,7 @@ class Sender(sender.BatchSender):
         args = agent.client.args
         kwargs = agent.client.kwargs
         self.client = Client(*args, **kwargs)
-        Parser.parser = agent.real_parser
+        self.parser = agent.real_parser
 
     def push(self):
         ret = False
