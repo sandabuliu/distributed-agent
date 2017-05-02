@@ -1,0 +1,2 @@
+distributed
+git+https://github.com/sandabuliu/python-agent.git
